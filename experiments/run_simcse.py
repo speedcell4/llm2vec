@@ -1,33 +1,22 @@
 import logging
-from dataclasses import dataclass, field
 import os
 import sys
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
-from torch import nn
-
+import transformers
 from accelerate import Accelerator, DistributedDataParallelKwargs
 from accelerate.logging import get_logger
-
-import transformers
-from transformers import (
-    MODEL_FOR_MASKED_LM_MAPPING,
-    HfArgumentParser,
-    TrainingArguments,
-    Trainer,
-    TrainerCallback,
-    set_seed,
-)
-from transformers.trainer_utils import seed_worker
-
 from peft import LoraConfig, get_peft_model
+from torch import nn
+from tqdm import tqdm
+from transformers import (HfArgumentParser, MODEL_FOR_MASKED_LM_MAPPING, Trainer, TrainerCallback, TrainingArguments,
+                          set_seed)
 
 from llm2vec import LLM2Vec
 from llm2vec.dataset.utils import load_dataset
 from llm2vec.loss.utils import load_loss
-
-from tqdm import tqdm
 
 transformers.logging.set_verbosity_error()
 
@@ -42,11 +31,11 @@ MODEL_TYPES = tuple(conf.model_type for conf in MODEL_CONFIG_CLASSES)
 
 
 def initialize_peft(
-    model,
-    lora_r: int = 8,
-    lora_alpha: int = 16,
-    lora_dropout: float = 0.05,
-    lora_modules: Optional[List[str]] = None,
+        model,
+        lora_r: int = 8,
+        lora_alpha: int = 16,
+        lora_dropout: float = 0.05,
+        lora_modules: Optional[List[str]] = None,
 ):
     if lora_modules is None and model.config.__class__.__name__ in [
         "LlamaConfig",
@@ -243,19 +232,19 @@ class StopTrainingCallback(TrainerCallback):
 class SimCSETrainer(Trainer):
 
     def __init__(
-        self,
-        *args,
-        loss_function=None,
-        **kwargs,
+            self,
+            *args,
+            loss_function=None,
+            **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.loss_function = loss_function
 
     def compute_loss(
-        self,
-        model: nn.Module,
-        inputs: Dict[str, Union[torch.Tensor, Any]],
-        return_outputs: bool = False,
+            self,
+            model: nn.Module,
+            inputs: Dict[str, Union[torch.Tensor, Any]],
+            return_outputs: bool = False,
     ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
         features, labels = inputs
         q_reps = self.model(features[0])

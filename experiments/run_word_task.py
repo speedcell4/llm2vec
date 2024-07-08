@@ -7,31 +7,19 @@ import os
 import sys
 import warnings
 from dataclasses import dataclass, field
-import numpy as np
 from typing import List, Optional, Tuple, Union
 
 import datasets
 import evaluate
-from datasets import load_dataset
-
+import numpy as np
 import torch
+import transformers
+from datasets import load_dataset
 from torch import nn
 from torch.nn import CrossEntropyLoss
-import transformers
-from transformers import (
-    PreTrainedModel,
-    MODEL_FOR_MASKED_LM_MAPPING,
-    AutoConfig,
-    AutoTokenizer,
-    HfArgumentParser,
-    Trainer,
-    TrainingArguments,
-    TrainerCallback,
-    set_seed,
-    AutoModelForTokenClassification,
-    DataCollatorForTokenClassification,
-)
-
+from transformers import (AutoConfig, AutoModelForTokenClassification, AutoTokenizer,
+                          DataCollatorForTokenClassification, HfArgumentParser, MODEL_FOR_MASKED_LM_MAPPING,
+                          PreTrainedModel, Trainer, TrainerCallback, TrainingArguments, set_seed)
 from transformers.modeling_outputs import TokenClassifierOutput
 from transformers.utils import send_example_telemetry
 from transformers.utils.versions import require_version
@@ -51,8 +39,8 @@ class ModelForWordTask(PreTrainedModel):
         self.merge_subwords = merge_subwords
 
         if (
-            hasattr(config, "classifier_dropout")
-            and config.classifier_dropout is not None
+                hasattr(config, "classifier_dropout")
+                and config.classifier_dropout is not None
         ):
             classifier_dropout = config.classifier_dropout
         elif hasattr(config, "hidden_dropout") and config.hidden_dropout is not None:
@@ -80,19 +68,19 @@ class ModelForWordTask(PreTrainedModel):
         return new_hidden_states
 
     def forward(
-        self,
-        input_ids: torch.LongTensor = None,
-        attention_mask: Optional[torch.Tensor] = None,
-        position_ids: Optional[torch.LongTensor] = None,
-        past_key_values: Optional[List[torch.FloatTensor]] = None,
-        inputs_embeds: Optional[torch.FloatTensor] = None,
-        use_cache: Optional[bool] = None,
-        output_attentions: Optional[bool] = None,
-        output_hidden_states: Optional[bool] = None,
-        return_dict: Optional[bool] = None,
-        token_type_ids: Optional[torch.LongTensor] = None,
-        head_mask: Optional[torch.FloatTensor] = None,
-        labels: Optional[torch.LongTensor] = None,
+            self,
+            input_ids: torch.LongTensor = None,
+            attention_mask: Optional[torch.Tensor] = None,
+            position_ids: Optional[torch.LongTensor] = None,
+            past_key_values: Optional[List[torch.FloatTensor]] = None,
+            inputs_embeds: Optional[torch.FloatTensor] = None,
+            use_cache: Optional[bool] = None,
+            output_attentions: Optional[bool] = None,
+            output_hidden_states: Optional[bool] = None,
+            return_dict: Optional[bool] = None,
+            token_type_ids: Optional[torch.LongTensor] = None,
+            head_mask: Optional[torch.FloatTensor] = None,
+            labels: Optional[torch.LongTensor] = None,
     ) -> Union[Tuple, TokenClassifierOutput]:
         output_attentions = (
             output_attentions
@@ -367,7 +355,7 @@ class ModelArguments:
 
     def __post_init__(self):
         if self.config_overrides is not None and (
-            self.config_name is not None or self.model_name_or_path is not None
+                self.config_name is not None or self.model_name_or_path is not None
         ):
             raise ValueError(
                 "--config_overrides can't be used in combination with --config_name or --model_name_or_path"
@@ -468,9 +456,9 @@ class DataTrainingArguments:
             )
 
         if (
-            self.dataset_name is None
-            and self.train_file is None
-            and self.validation_file is None
+                self.dataset_name is None
+                and self.train_file is None
+                and self.validation_file is None
         ):
             raise ValueError(
                 "Need either a dataset name or a training/validation file."
@@ -672,8 +660,8 @@ def main():
             )
 
     assert (
-        data_args.dataset_name in LABELS
-        and custom_args.task in LABELS[data_args.dataset_name]
+            data_args.dataset_name in LABELS
+            and custom_args.task in LABELS[data_args.dataset_name]
     ), f"LABELS[{data_args.dataset_name}][{custom_args.task}] is not defined."
 
     config_kwargs = {

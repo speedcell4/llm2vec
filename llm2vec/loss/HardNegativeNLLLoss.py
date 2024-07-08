@@ -1,23 +1,24 @@
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
+
 from .loss_utils import cos_sim, mismatched_sizes_all_gather
 
 
 class HardNegativeNLLLoss:
     def __init__(
-        self,
-        scale: float = 20.0,
-        similarity_fct=cos_sim,
+            self,
+            scale: float = 20.0,
+            similarity_fct=cos_sim,
     ):
         self.scale = scale
         self.similarity_fct = similarity_fct
         self.cross_entropy_loss = nn.CrossEntropyLoss()
 
     def __call__(
-        self,
-        q_reps: Tensor,
-        d_reps_pos: Tensor,
-        d_reps_neg: Tensor = None,
+            self,
+            q_reps: Tensor,
+            d_reps_pos: Tensor,
+            d_reps_neg: Tensor = None,
     ):
         if d_reps_neg is None:
             d_reps_neg = d_reps_pos[:0, :]

@@ -1,9 +1,9 @@
-from sklearn.metrics import accuracy_score, f1_score
-from sklearn.linear_model import LogisticRegression
 import datasets
 import numpy as np
-
 import torch
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, f1_score
+
 from llm2vec import LLM2Vec
 
 dataset = "mteb/amazon_counterfactual"

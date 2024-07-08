@@ -1,22 +1,16 @@
-import os
-import sys
-import logging
 import argparse
-from transformers import (
-    AutoTokenizer,
-    AutoConfig,
-    AutoModelForTokenClassification,
-    set_seed,
-    HfArgumentParser,
-)
+import json
+import logging
+import os
+
+import evaluate
 import torch
 from datasets import load_dataset
-import evaluate
-import json
 from tqdm import tqdm
-from run_word_task import ModelForWordTask
-from llm2vec import LLM2Vec
+from transformers import (AutoConfig, AutoModelForTokenClassification, AutoTokenizer, set_seed)
 
+from llm2vec import LLM2Vec
+from run_word_task import ModelForWordTask
 
 LABELS = {
     "conll2003": {
@@ -175,7 +169,6 @@ if __name__ == "__main__":
     if args.config_file is not None:
         # If we pass only one argument to the script and it's the path to a json file,
         # let's parse it to get our arguments.
-        from pathlib import Path
         import json
 
         json_text = json.load(open(os.path.abspath(args.config_file)))
@@ -187,7 +180,7 @@ if __name__ == "__main__":
 
     path_to_check = args.peft_addr if args.peft_addr else args.model_name_or_path
     assert (
-        args.output_dir is not None
+            args.output_dir is not None
     ), "If you want to evaluate a model, you have to provide the output_dir"
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -209,7 +202,7 @@ if __name__ == "__main__":
         assert not args.merge_subwords
 
     assert (
-        args.dataset_name in LABELS and args.task in LABELS[args.dataset_name]
+            args.dataset_name in LABELS and args.task in LABELS[args.dataset_name]
     ), f"LABELS[{args.dataset_name}][{args.task}] is not defined."
 
     config_kwargs = {
@@ -277,6 +270,7 @@ if __name__ == "__main__":
 
     raw_datasets = load_dataset(args.dataset_name, split="test")
 
+
     def tokenize_and_align_labels(examples):
         task = args.task
         tokenized_inputs = tokenizer(
@@ -335,6 +329,7 @@ if __name__ == "__main__":
             tokenized_inputs["token_type_ids"] = words
         return tokenized_inputs
 
+
     tokenized_dataset = raw_datasets.map(
         tokenize_and_align_labels,
         batched=True,
@@ -344,32 +339,32 @@ if __name__ == "__main__":
         predictions = None
         labels = None
         for batch_begin in tqdm(
-            torch.arange(0, len(tokenized_dataset), args.batch_size)
+                torch.arange(0, len(tokenized_dataset), args.batch_size)
         ):
             features = {
                 "input_ids": torch.tensor(
-                    tokenized_dataset[batch_begin : batch_begin + args.batch_size][
+                    tokenized_dataset[batch_begin: batch_begin + args.batch_size][
                         "input_ids"
                     ]
                 ).to(model.device),
                 "attention_mask": torch.tensor(
-                    tokenized_dataset[batch_begin : batch_begin + args.batch_size][
+                    tokenized_dataset[batch_begin: batch_begin + args.batch_size][
                         "attention_mask"
                     ]
                 ).to(model.device),
             }
             if (
-                "token_type_ids"
-                in tokenized_dataset[batch_begin : batch_begin + args.batch_size]
+                    "token_type_ids"
+                    in tokenized_dataset[batch_begin: batch_begin + args.batch_size]
             ):
                 features["token_type_ids"] = torch.tensor(
-                    tokenized_dataset[batch_begin : batch_begin + args.batch_size][
+                    tokenized_dataset[batch_begin: batch_begin + args.batch_size][
                         "token_type_ids"
                     ]
                 ).to(model.device)
 
             labs = torch.tensor(
-                tokenized_dataset[batch_begin : batch_begin + args.batch_size]["labels"]
+                tokenized_dataset[batch_begin: batch_begin + args.batch_size]["labels"]
             )
 
             logits = model(**features).logits

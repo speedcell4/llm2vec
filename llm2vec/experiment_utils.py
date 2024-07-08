@@ -2,18 +2,18 @@ import re
 
 
 def generate_experiment_id(
-    name,
-    split,
-    model_name,
-    pooling_mode,
-    train_batch_size,
-    max_seq_length,
-    bidirectional,
-    epochs,
-    seed,
-    warmup_steps,
-    lr,
-    lora_r,
+        name,
+        split,
+        model_name,
+        pooling_mode,
+        train_batch_size,
+        max_seq_length,
+        bidirectional,
+        epochs,
+        seed,
+        warmup_steps,
+        lr,
+        lora_r,
 ):
     experiment_id = name + "_" + split
 

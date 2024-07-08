@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-from functools import partial
 from typing import Dict, List, Optional, Union
 
 import numpy as np
@@ -10,22 +9,9 @@ import torch.multiprocessing as mp
 from peft import PeftModel
 from torch import Tensor, device, nn
 from tqdm.autonotebook import tqdm, trange
-from transformers import (
-    AutoModel,
-    AutoConfig,
-    AutoTokenizer,
-    LlamaConfig,
-    MistralConfig,
-    GemmaConfig,
-    Qwen2Config,
-)
+from transformers import (AutoConfig, AutoModel, AutoTokenizer, GemmaConfig, LlamaConfig, MistralConfig, Qwen2Config)
 
-from .models import (
-    MistralBiModel,
-    LlamaBiModel,
-    GemmaBiModel,
-    Qwen2BiModel,
-)
+from .models import (GemmaBiModel, LlamaBiModel, MistralBiModel, Qwen2BiModel)
 
 logger = logging.getLogger(__name__)
 
@@ -42,13 +28,13 @@ def batch_to_device(batch, target_device: device):
 
 class LLM2Vec(nn.Module):
     def __init__(
-        self,
-        model: AutoModel,
-        tokenizer: AutoTokenizer,
-        pooling_mode: str = "mean",
-        max_length: int = 512,
-        doc_max_length: int = 400,
-        skip_instruction: bool = True,
+            self,
+            model: AutoModel,
+            tokenizer: AutoTokenizer,
+            pooling_mode: str = "mean",
+            max_length: int = 512,
+            doc_max_length: int = 400,
+            skip_instruction: bool = True,
     ):
         super().__init__()
         self.model = model
@@ -78,12 +64,12 @@ class LLM2Vec(nn.Module):
 
     @classmethod
     def from_pretrained(
-        cls,
-        base_model_name_or_path,
-        peft_model_name_or_path=None,
-        merge_peft=False,
-        enable_bidirectional=True,
-        **kwargs,
+            cls,
+            base_model_name_or_path,
+            peft_model_name_or_path=None,
+            merge_peft=False,
+            enable_bidirectional=True,
+            **kwargs,
     ):
         # pop out encoder args
         keys = ["pooling_mode", "max_length", "doc_max_length", "skip_instruction"]
@@ -138,9 +124,9 @@ class LLM2Vec(nn.Module):
     def prepare_for_tokenization(self, text):
         if self.model.config._name_or_path == "meta-llama/Meta-Llama-3-8B-Instruct":
             text = (
-                "<|start_header_id|>user<|end_header_id|>\n\n"
-                + text.strip()
-                + "<|eot_id|>"
+                    "<|start_header_id|>user<|end_header_id|>\n\n"
+                    + text.strip()
+                    + "<|eot_id|>"
             )
             return text
         if self.model.config._name_or_path in [
@@ -161,7 +147,7 @@ class LLM2Vec(nn.Module):
             if self.model.config._name_or_path == "meta-llama/Meta-Llama-3-8B":
                 text = text.strip() + "<|end_of_text|>"
             elif isinstance(self.model.config, LlamaConfig) or isinstance(
-                self.model.config, MistralConfig
+                    self.model.config, MistralConfig
             ):
                 text = text.strip() + " </s>"
             elif isinstance(self.model.config, GemmaConfig):
@@ -198,14 +184,14 @@ class LLM2Vec(nn.Module):
             if embed_mask is None:
                 e_m = torch.zeros_like(original["attention_mask"][t_i])
                 if len(ids["input_ids"][0]) > 0:
-                    e_m[-len(ids["input_ids"][0]) :] = torch.ones(
+                    e_m[-len(ids["input_ids"][0]):] = torch.ones(
                         len(ids["input_ids"][0])
                     )
                 embed_mask = e_m.unsqueeze(0)
             else:
                 e_m = torch.zeros_like(original["attention_mask"][t_i])
                 if len(ids["input_ids"][0]) > 0:
-                    e_m[-len(ids["input_ids"][0]) :] = torch.ones(
+                    e_m[-len(ids["input_ids"][0]):] = torch.ones(
                         len(ids["input_ids"][0])
                     )
                 embed_mask = torch.cat((embed_mask, e_m.unsqueeze(0)), dim=0)
@@ -215,8 +201,8 @@ class LLM2Vec(nn.Module):
 
     def _skip_instruction(self, sentence_feature):
         assert (
-            sentence_feature["attention_mask"].shape
-            == sentence_feature["embed_mask"].shape
+                sentence_feature["attention_mask"].shape
+                == sentence_feature["embed_mask"].shape
         )
         sentence_feature["attention_mask"] = sentence_feature["embed_mask"]
 
@@ -231,7 +217,7 @@ class LLM2Vec(nn.Module):
 
     def get_pooling(self, features, last_hidden_states):  # All models padded from left
         assert (
-            self.tokenizer.padding_side == "left"
+                self.tokenizer.padding_side == "left"
         ), "Pooling modes are implemented for padding from left."
         if self.skip_instruction:
             self._skip_instruction(features)
@@ -259,7 +245,7 @@ class LLM2Vec(nn.Module):
         elif self.pooling_mode == "bos_token":
             return last_hidden_states[
                 features["input_ids"] == self.tokenizer.bos_token_id
-            ]
+                ]
         else:
             raise ValueError(f"{self.pooling_mode} is not implemented yet.")
 
@@ -295,13 +281,13 @@ class LLM2Vec(nn.Module):
         )
 
     def encode(
-        self,
-        sentences: Union[str, List[str]],
-        batch_size: int = 32,
-        show_progress_bar: bool = True,
-        convert_to_numpy: bool = False,
-        convert_to_tensor: bool = False,
-        device: Optional[str] = None,
+            self,
+            sentences: Union[str, List[str]],
+            batch_size: int = 32,
+            show_progress_bar: bool = True,
+            convert_to_numpy: bool = False,
+            convert_to_tensor: bool = False,
+            device: Optional[str] = None,
     ):
         """
         Encode a list of sentences to their respective embeddings. The sentences can be a list of strings or a string.
@@ -349,15 +335,15 @@ class LLM2Vec(nn.Module):
             # This branch also support mps devices
             self.to(device)
             for start_index in trange(
-                0,
-                len(sentences),
-                batch_size,
-                desc="Batches",
-                disable=not show_progress_bar,
+                    0,
+                    len(sentences),
+                    batch_size,
+                    desc="Batches",
+                    disable=not show_progress_bar,
             ):
                 sentences_batch = sentences_sorted[
-                    start_index : start_index + batch_size
-                ]
+                                  start_index: start_index + batch_size
+                                  ]
                 embeddings = self._encode(
                     sentences_batch, device=device, convert_to_numpy=convert_to_numpy
                 )
@@ -368,7 +354,7 @@ class LLM2Vec(nn.Module):
             cuda_compatible_multiprocess = mp.get_context("spawn")
             with cuda_compatible_multiprocess.Pool(num_proc) as p:
                 sentences_batches = [
-                    sentences_sorted[start_index : start_index + batch_size]
+                    sentences_sorted[start_index: start_index + batch_size]
                     for start_index in range(0, len(sentences), batch_size)
                 ]
 
@@ -424,11 +410,11 @@ class LLM2Vec(nn.Module):
                 json.dump(llm2vec_config, fOut, indent=4)
 
     def _encode(
-        self,
-        sentences_batch,
-        device: Optional[str] = None,
-        convert_to_numpy: bool = False,
-        multiprocessing=False,
+            self,
+            sentences_batch,
+            device: Optional[str] = None,
+            convert_to_numpy: bool = False,
+            multiprocessing=False,
     ):
         if multiprocessing:
             # multiprocessing only supports CUDA devices at this time, so we ignore the value of device
@@ -457,9 +443,9 @@ class LLM2Vec(nn.Module):
         (representing several text inputs to the model).
         """
         if (
-            isinstance(text, str)
-            or (isinstance(text, list) and isinstance(text[0], int))
-            or len(text) == 0
+                isinstance(text, str)
+                or (isinstance(text, list) and isinstance(text[0], int))
+                or len(text) == 0
         ):  # Single text, list of ints, or empty
             return len(text)
         if isinstance(text, dict):  # {key: value} case
@@ -470,9 +456,9 @@ class LLM2Vec(nn.Module):
             return sum([len(t) for t in text])
 
     def resize_token_embeddings(
-        self,
-        new_num_tokens: Optional[int] = None,
-        pad_to_multiple_of: Optional[int] = None,
+            self,
+            new_num_tokens: Optional[int] = None,
+            pad_to_multiple_of: Optional[int] = None,
     ) -> nn.Embedding:
         return self.model.resize_token_embeddings(
             new_num_tokens=new_num_tokens, pad_to_multiple_of=pad_to_multiple_of

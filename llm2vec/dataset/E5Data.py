@@ -1,9 +1,10 @@
 import json
-import random
 import os
+import random
 
-from .dataset import DataSample, TrainSample, Dataset
 from accelerate.logging import get_logger
+
+from .dataset import DataSample, Dataset, TrainSample
 
 logger = get_logger(__name__, log_level="INFO")
 
@@ -33,13 +34,13 @@ E5_EMBEDDING_PROMPTS = {
 
 class E5Data(Dataset):
     def __init__(
-        self,
-        dataset_name: str = "E5",
-        split: str = "validation",
-        file_path: str = "cache/echo-data",
-        effective_batch_size: int = 32,
-        shuffle_individual_datasets: bool = True,
-        separator: str = "!@#$%^&*()",
+            self,
+            dataset_name: str = "E5",
+            split: str = "validation",
+            file_path: str = "cache/echo-data",
+            effective_batch_size: int = 32,
+            shuffle_individual_datasets: bool = True,
+            separator: str = "!@#$%^&*()",
     ):
         self.dataset_name = dataset_name
         self.split = split
@@ -82,14 +83,14 @@ class E5Data(Dataset):
                     "quora_duplicates_split2",
                 ]:
                     pos = (
-                        f"{E5_EMBEDDING_PROMPTS[dataset]}; "
-                        + self.separator
-                        + sample["positive"]
+                            f"{E5_EMBEDDING_PROMPTS[dataset]}; "
+                            + self.separator
+                            + sample["positive"]
                     )
                     neg = (
-                        f"{E5_EMBEDDING_PROMPTS[dataset]}; "
-                        + self.separator
-                        + sample["negative"]
+                            f"{E5_EMBEDDING_PROMPTS[dataset]}; "
+                            + self.separator
+                            + sample["negative"]
                     )
                 else:
                     pos = self.separator + sample["positive"]
@@ -130,7 +131,7 @@ class E5Data(Dataset):
         for dataset in datasets:
             dataset_samples = data_map[dataset]
             for i in range(0, len(dataset_samples), self.effective_batch_size):
-                batch = dataset_samples[i : i + self.effective_batch_size]
+                batch = dataset_samples[i: i + self.effective_batch_size]
                 if len(batch) == self.effective_batch_size:
                     all_batches.append(batch)
                 else:

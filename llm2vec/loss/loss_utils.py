@@ -56,7 +56,7 @@ def cos_sim(a: Tensor, b: Tensor):
 
 
 def mismatched_sizes_all_gather(
-    tensor: Tensor, group=None, async_op=False, mismatched_axis=0
+        tensor: Tensor, group=None, async_op=False, mismatched_axis=0
 ):
     # all_gather doesn't support tensor lists where the first dimension is mismatched. This does.
     assert torch.distributed.is_initialized(), "torch.distributed not initialized"
@@ -76,7 +76,7 @@ def mismatched_sizes_all_gather(
         (
             *tensor.shape[:mismatched_axis],
             max_size,
-            *tensor.shape[mismatched_axis + 1 :],
+            *tensor.shape[mismatched_axis + 1:],
         ),
         device=tensor.device,
         dtype=tensor.dtype,

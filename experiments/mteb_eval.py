@@ -1,6 +1,7 @@
 import argparse
-import mteb
 import json
+
+import mteb
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

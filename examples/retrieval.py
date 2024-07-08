@@ -1,12 +1,13 @@
-import datasets
-import torch
-from llm2vec import LLM2Vec
-from beir import util
-from beir.datasets.data_loader import GenericDataLoader as BeirDataLoader
 import os
 from typing import Dict, List
 
+import datasets
+import torch
+from beir import util
+from beir.datasets.data_loader import GenericDataLoader as BeirDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
+
+from llm2vec import LLM2Vec
 
 dataset = "arguana"
 instruction = "Given a claim, find documents that refute the claim: "
@@ -122,7 +123,7 @@ cos_scores_top_k_idx = cos_scores_top_k_idx.cpu().tolist()
 for query_itr in range(len(query_embeddings)):
     query_id = query_ids[query_itr]
     for sub_corpus_id, score in zip(
-        cos_scores_top_k_idx[query_itr], cos_scores_top_k_values[query_itr]
+            cos_scores_top_k_idx[query_itr], cos_scores_top_k_values[query_itr]
     ):
         corpus_id = corpus_ids[sub_corpus_id]
         if corpus_id != query_id:

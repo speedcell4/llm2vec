@@ -1,11 +1,9 @@
-import sklearn
-import sklearn.cluster
-
 import datasets
-import tqdm
 import numpy as np
-
+import sklearn.cluster
 import torch
+import tqdm
+
 from llm2vec import LLM2Vec
 
 dataset = "mteb/twentynewsgroups-clustering"

@@ -1,30 +1,19 @@
 from typing import List, Optional, Tuple, Union
-import torch
 
-from transformers import (
-    MistralModel,
-    MistralPreTrainedModel,
-    MistralForCausalLM,
-    MistralConfig,
-)
-from transformers.modeling_outputs import BaseModelOutputWithPast
-from transformers.cache_utils import Cache, DynamicCache
-from transformers.models.mistral.modeling_mistral import (
-    MistralDecoderLayer,
-    MistralRMSNorm,
-    MistralAttention,
-    MistralFlashAttention2,
-    MistralSdpaAttention,
-    MistralMLP,
-)
+import torch
+from peft import PeftModel
 from torch import nn
+from transformers import (MistralConfig, MistralForCausalLM, MistralModel, MistralPreTrainedModel)
+from transformers.cache_utils import Cache, DynamicCache
+from transformers.modeling_outputs import BaseModelOutputWithPast
+from transformers.models.mistral.modeling_mistral import (MistralAttention, MistralDecoderLayer, MistralFlashAttention2,
+                                                          MistralMLP, MistralRMSNorm, MistralSdpaAttention)
 from transformers.utils import logging
+
 from .attn_mask_utils import (
     _prepare_4d_causal_attention_mask,
     _prepare_4d_causal_attention_mask_for_sdpa,
 )
-
-from peft import PeftModel
 
 logger = logging.get_logger(__name__)
 
@@ -98,16 +87,16 @@ class MistralBiModel(MistralModel):
 
     # Copied from forward() in transformers.models.mistral.modeling_mistral.MistralModel
     def forward(
-        self,
-        input_ids: torch.LongTensor = None,
-        attention_mask: Optional[torch.Tensor] = None,
-        position_ids: Optional[torch.LongTensor] = None,
-        past_key_values: Optional[List[torch.FloatTensor]] = None,
-        inputs_embeds: Optional[torch.FloatTensor] = None,
-        use_cache: Optional[bool] = None,
-        output_attentions: Optional[bool] = None,
-        output_hidden_states: Optional[bool] = None,
-        return_dict: Optional[bool] = None,
+            self,
+            input_ids: torch.LongTensor = None,
+            attention_mask: Optional[torch.Tensor] = None,
+            position_ids: Optional[torch.LongTensor] = None,
+            past_key_values: Optional[List[torch.FloatTensor]] = None,
+            inputs_embeds: Optional[torch.FloatTensor] = None,
+            use_cache: Optional[bool] = None,
+            output_attentions: Optional[bool] = None,
+            output_hidden_states: Optional[bool] = None,
+            return_dict: Optional[bool] = None,
     ) -> Union[Tuple, BaseModelOutputWithPast]:
         output_attentions = (
             output_attentions
@@ -170,9 +159,9 @@ class MistralBiModel(MistralModel):
             inputs_embeds = self.embed_tokens(input_ids)
 
         if (
-            attention_mask is not None
-            and self._attn_implementation == "flash_attention_2"
-            and use_cache
+                attention_mask is not None
+                and self._attn_implementation == "flash_attention_2"
+                and use_cache
         ):
             is_padding_right = attention_mask[:, -1].sum().item() != batch_size
             if is_padding_right:

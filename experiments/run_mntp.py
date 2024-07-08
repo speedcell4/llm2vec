@@ -24,40 +24,22 @@ import sys
 import warnings
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Optional, Any, Tuple, List
-import numpy as np
+from typing import Any, List, Optional, Tuple
 
 import datasets
 import evaluate
-from datasets import load_dataset
-
 import torch
 import transformers
-from transformers import (
-    CONFIG_MAPPING,
-    MODEL_FOR_MASKED_LM_MAPPING,
-    AutoConfig,
-    AutoTokenizer,
-    DataCollatorForLanguageModeling,
-    HfArgumentParser,
-    Trainer,
-    TrainingArguments,
-    TrainerCallback,
-    is_torch_tpu_available,
-    set_seed,
-)
+from datasets import load_dataset
+from peft import LoraConfig, get_peft_model
+from transformers import (AutoConfig, AutoTokenizer, CONFIG_MAPPING, DataCollatorForLanguageModeling, HfArgumentParser,
+                          MODEL_FOR_MASKED_LM_MAPPING, Trainer, TrainerCallback, TrainingArguments,
+                          is_torch_tpu_available, set_seed)
 from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import send_example_telemetry
 from transformers.utils.versions import require_version
 
-from peft import LoraConfig, get_peft_model
-
-from llm2vec.models import (
-    MistralBiForMNTP,
-    LlamaBiForMNTP,
-    GemmaBiForMNTP,
-    Qwen2BiForMNTP,
-)
+from llm2vec.models import (GemmaBiForMNTP, LlamaBiForMNTP, MistralBiForMNTP, Qwen2BiForMNTP)
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 # check_min_version("4.38.0.dev0")
@@ -87,11 +69,11 @@ def get_model_class(config):
 
 
 def initialize_peft(
-    model,
-    lora_r: int = 8,
-    lora_alpha: int = 16,
-    lora_dropout: float = 0.05,
-    lora_modules: Optional[List[str]] = None,
+        model,
+        lora_r: int = 8,
+        lora_alpha: int = 16,
+        lora_dropout: float = 0.05,
+        lora_modules: Optional[List[str]] = None,
 ):
     if lora_modules is None and model.config.__class__.__name__ in [
         "LlamaConfig",
@@ -144,7 +126,7 @@ class ModelArguments:
         default=None,
         metadata={
             "help": "If training from scratch, pass a model type from the list: "
-            + ", ".join(MODEL_TYPES)
+                    + ", ".join(MODEL_TYPES)
         },
     )
     config_overrides: Optional[str] = field(
@@ -240,7 +222,7 @@ class ModelArguments:
 
     def __post_init__(self):
         if self.config_overrides is not None and (
-            self.config_name is not None or self.model_name_or_path is not None
+                self.config_name is not None or self.model_name_or_path is not None
         ):
             raise ValueError(
                 "--config_overrides can't be used in combination with --config_name or --model_name_or_path"
@@ -341,9 +323,9 @@ class DataTrainingArguments:
             )
 
         if (
-            self.dataset_name is None
-            and self.train_file is None
-            and self.validation_file is None
+                self.dataset_name is None
+                and self.train_file is None
+                and self.validation_file is None
         ):
             raise ValueError(
                 "Need either a dataset name or a training/validation file."
@@ -393,9 +375,9 @@ class CustomArguments:
 
 class DataCollatorForLanguageModelingWithFullMasking(DataCollatorForLanguageModeling):
     def torch_mask_tokens(
-        self,
-        inputs: Any,
-        special_tokens_mask: Optional[Any] = None,
+            self,
+            inputs: Any,
+            special_tokens_mask: Optional[Any] = None,
     ) -> Tuple[Any, Any]:
         """
         Prepare masked tokens inputs/labels for masked language modeling: 100% MASK, 0% random, 0% original.
@@ -443,7 +425,7 @@ class MNTPTrainer(Trainer):
         self.label_names = ["labels"]
 
     def _remove_unused_columns(
-        self, dataset: "datasets.Dataset", description: Optional[str] = None
+            self, dataset: "datasets.Dataset", description: Optional[str] = None
     ):
         return dataset
 
@@ -531,9 +513,9 @@ def main():
     # Detecting last checkpoint.
     last_checkpoint = None
     if (
-        os.path.isdir(training_args.output_dir)
-        and training_args.do_train
-        and not training_args.overwrite_output_dir
+            os.path.isdir(training_args.output_dir)
+            and training_args.do_train
+            and not training_args.overwrite_output_dir
     ):
         last_checkpoint = get_last_checkpoint(training_args.output_dir)
         if last_checkpoint is None and len(os.listdir(training_args.output_dir)) > 0:
@@ -542,7 +524,7 @@ def main():
                 "Use --overwrite_output_dir to overcome."
             )
         elif (
-            last_checkpoint is not None and training_args.resume_from_checkpoint is None
+                last_checkpoint is not None and training_args.resume_from_checkpoint is None
         ):
             logger.info(
                 f"Checkpoint detected, resuming training at {last_checkpoint}. To avoid this behavior, change "
@@ -823,7 +805,7 @@ def main():
             # Split by chunks of max_len.
             result = {
                 k: [
-                    t[i : i + max_seq_length]
+                    t[i: i + max_seq_length]
                     for i in range(0, total_length, max_seq_length)
                 ]
                 for k, t in concatenated_examples.items()
@@ -893,9 +875,9 @@ def main():
     # Data collator
     # This one will take care of randomly masking the tokens.
     pad_to_multiple_of_8 = (
-        data_args.line_by_line
-        and training_args.fp16
-        and not data_args.pad_to_max_length
+            data_args.line_by_line
+            and training_args.fp16
+            and not data_args.pad_to_max_length
     )
     data_collator_cls = None
     if custom_args.data_collator_type == "all_mask":

@@ -1,14 +1,15 @@
 from typing import List, Optional, Tuple, Union
+
 import torch
 from transformers.modeling_attn_mask_utils import AttentionMaskConverter
 
 
 def _prepare_4d_causal_attention_mask(
-    attention_mask: Optional[torch.Tensor],
-    input_shape: Union[torch.Size, Tuple, List],
-    inputs_embeds: torch.Tensor,
-    past_key_values_length: int,
-    sliding_window: Optional[int] = None,
+        attention_mask: Optional[torch.Tensor],
+        input_shape: Union[torch.Size, Tuple, List],
+        inputs_embeds: torch.Tensor,
+        past_key_values_length: int,
+        sliding_window: Optional[int] = None,
 ):
     """
     Creates a causal 4D mask of shape `(batch_size, 1, query_length, key_value_length)` from a 2D mask of shape
@@ -66,11 +67,11 @@ def _prepare_4d_causal_attention_mask(
 
 # Adapted from _prepare_4d_causal_attention_mask
 def _prepare_4d_causal_attention_mask_for_sdpa(
-    attention_mask: Optional[torch.Tensor],
-    input_shape: Union[torch.Size, Tuple, List],
-    inputs_embeds: torch.Tensor,
-    past_key_values_length: int,
-    sliding_window: Optional[int] = None,
+        attention_mask: Optional[torch.Tensor],
+        input_shape: Union[torch.Size, Tuple, List],
+        inputs_embeds: torch.Tensor,
+        past_key_values_length: int,
+        sliding_window: Optional[int] = None,
 ):
     """
     Prepares the correct `attn_mask` argument to be used by `torch.nn.functional.scaled_dot_product_attention`.
@@ -90,9 +91,9 @@ def _prepare_4d_causal_attention_mask_for_sdpa(
     # used as an SDPA argument. We keep compatibility with these tracing tools by always using SDPA's `attn_mask` argument in case we are tracing.
     # TODO: For dynamo, rather use a check on fullgraph=True once this is possible (https://github.com/pytorch/pytorch/pull/120400).
     is_tracing = (
-        torch.jit.is_tracing()
-        or isinstance(inputs_embeds, torch.fx.Proxy)
-        or (hasattr(torch, "_dynamo") and torch._dynamo.is_compiling())
+            torch.jit.is_tracing()
+            or isinstance(inputs_embeds, torch.fx.Proxy)
+            or (hasattr(torch, "_dynamo") and torch._dynamo.is_compiling())
     )
 
     if attention_mask is not None:

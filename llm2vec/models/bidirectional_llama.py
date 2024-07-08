@@ -1,25 +1,15 @@
-import torch
-
-from packaging import version
 import importlib.metadata
 
-from transformers import LlamaModel, LlamaForCausalLM, LlamaPreTrainedModel, LlamaConfig
-from transformers.models.llama.modeling_llama import (
-    LlamaDecoderLayer,
-    LlamaAttention,
-    LlamaFlashAttention2,
-    LlamaSdpaAttention,
-    LlamaMLP,
-    LlamaRMSNorm,
-)
-
-from torch import nn
-from transformers.utils import logging
-
-from transformers.modeling_attn_mask_utils import AttentionMaskConverter
-from transformers.utils.import_utils import _is_package_available
-
+import torch
+from packaging import version
 from peft import PeftModel
+from torch import nn
+from transformers import LlamaConfig, LlamaForCausalLM, LlamaModel, LlamaPreTrainedModel
+from transformers.modeling_attn_mask_utils import AttentionMaskConverter
+from transformers.models.llama.modeling_llama import (LlamaAttention, LlamaDecoderLayer, LlamaFlashAttention2, LlamaMLP,
+                                                      LlamaRMSNorm, LlamaSdpaAttention)
+from transformers.utils import logging
+from transformers.utils.import_utils import _is_package_available
 
 logger = logging.get_logger(__name__)
 
@@ -111,12 +101,12 @@ class LlamaBiModel(LlamaModel):
         self.post_init()
 
     def _update_causal_mask(
-        self,
-        attention_mask,
-        input_tensor,
-        cache_position,
-        past_seen_tokens=None,
-        output_attentions=False,
+            self,
+            attention_mask,
+            input_tensor,
+            cache_position,
+            past_seen_tokens=None,
+            output_attentions=False,
     ):
         if self.config._attn_implementation == "flash_attention_2":
             if attention_mask is not None and 0.0 in attention_mask:
@@ -135,7 +125,7 @@ class LlamaBiModel(LlamaModel):
         min_dtype = torch.finfo(dtype).min
         sequence_length = input_tensor.shape[1]
         if hasattr(
-            getattr(self.layers[0], "self_attn", {}), "past_key_value"
+                getattr(self.layers[0], "self_attn", {}), "past_key_value"
         ):  # static cache
             target_length = self.config.max_position_embeddings
         else:  # dynamic cache
@@ -168,11 +158,11 @@ class LlamaBiModel(LlamaModel):
             if attention_mask.dim() == 2:
                 mask_length = attention_mask.shape[-1]
                 padding_mask = causal_mask[..., :mask_length].eq(0.0) * attention_mask[
-                    :, None, None, :
-                ].eq(0.0)
+                                                                        :, None, None, :
+                                                                        ].eq(0.0)
                 causal_mask[..., :mask_length] = causal_mask[
-                    ..., :mask_length
-                ].masked_fill(padding_mask, min_dtype)
+                                                 ..., :mask_length
+                                                 ].masked_fill(padding_mask, min_dtype)
             elif attention_mask.dim() == 4:
                 # backwards compatibility: we allow passing a 4D attention mask shorter than the input length with
                 # cache. In that case, the 4D attention mask attends to the newest tokens only.
@@ -183,17 +173,17 @@ class LlamaBiModel(LlamaModel):
                 mask_shape = attention_mask.shape
                 mask_slice = (attention_mask.eq(0.0)).to(dtype=dtype) * min_dtype
                 causal_mask[
-                    : mask_shape[0],
-                    : mask_shape[1],
-                    offset : mask_shape[2] + offset,
-                    : mask_shape[3],
+                : mask_shape[0],
+                : mask_shape[1],
+                offset: mask_shape[2] + offset,
+                : mask_shape[3],
                 ] = mask_slice
 
         if (
-            self.config._attn_implementation == "sdpa"
-            and attention_mask is not None
-            and attention_mask.device.type == "cuda"
-            and not output_attentions
+                self.config._attn_implementation == "sdpa"
+                and attention_mask is not None
+                and attention_mask.device.type == "cuda"
+                and not output_attentions
         ):
             causal_mask = AttentionMaskConverter._unmask_unattended(
                 causal_mask, min_dtype

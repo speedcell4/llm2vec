@@ -1,9 +1,6 @@
-from typing import List, Optional, Tuple, Union
 import torch
 
 from transformers import Qwen2Model, Qwen2ForCausalLM, Qwen2PreTrainedModel, Qwen2Config
-from transformers.modeling_outputs import BaseModelOutputWithPast
-from transformers.cache_utils import Cache, DynamicCache
 from transformers.models.qwen2.modeling_qwen2 import (
     Qwen2DecoderLayer,
     Qwen2RMSNorm,
@@ -14,10 +11,6 @@ from transformers.models.qwen2.modeling_qwen2 import (
 )
 from torch import nn
 from transformers.utils import logging
-from .attn_mask_utils import (
-    _prepare_4d_causal_attention_mask,
-    _prepare_4d_causal_attention_mask_for_sdpa,
-)
 
 from peft import PeftModel
 

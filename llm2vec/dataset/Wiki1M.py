@@ -1,15 +1,16 @@
-from .dataset import DataSample, TrainSample, Dataset
 from accelerate.logging import get_logger
+
+from .dataset import DataSample, Dataset, TrainSample
 
 logger = get_logger(__name__, log_level="INFO")
 
 
 class Wiki1M(Dataset):
     def __init__(
-        self,
-        dataset_name: str = "Wiki1M",
-        split: str = "validation",
-        file_path: str = "cache/wiki1m_for_simcse.txt",
+            self,
+            dataset_name: str = "Wiki1M",
+            split: str = "validation",
+            file_path: str = "cache/wiki1m_for_simcse.txt",
     ):
         self.dataset_name = dataset_name
         self.split = split

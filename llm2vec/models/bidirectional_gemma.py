@@ -1,26 +1,16 @@
-import torch
-
-from packaging import version
 import importlib.metadata
 
-from transformers import GemmaModel, GemmaForCausalLM, GemmaPreTrainedModel, GemmaConfig
-from transformers.models.gemma.modeling_gemma import (
-    GemmaDecoderLayer,
-    GemmaAttention,
-    GemmaFlashAttention2,
-    GemmaSdpaAttention,
-    GemmaMLP,
-    GemmaRMSNorm,
-)
-
-from torch import nn
-from transformers.utils import logging
-
-from transformers.modeling_attn_mask_utils import AttentionMaskConverter
-from transformers.utils.import_utils import _is_package_available
-from transformers.cache_utils import Cache, StaticCache
-
+import torch
+from packaging import version
 from peft import PeftModel
+from torch import nn
+from transformers import GemmaConfig, GemmaForCausalLM, GemmaModel, GemmaPreTrainedModel
+from transformers.cache_utils import Cache, StaticCache
+from transformers.modeling_attn_mask_utils import AttentionMaskConverter
+from transformers.models.gemma.modeling_gemma import (GemmaAttention, GemmaDecoderLayer, GemmaFlashAttention2, GemmaMLP,
+                                                      GemmaRMSNorm, GemmaSdpaAttention)
+from transformers.utils import logging
+from transformers.utils.import_utils import _is_package_available
 
 logger = logging.get_logger(__name__)
 
@@ -103,12 +93,12 @@ class GemmaBiModel(GemmaModel):
         self.post_init()
 
     def _update_causal_mask(
-        self,
-        attention_mask: torch.Tensor,
-        input_tensor: torch.Tensor,
-        cache_position: torch.Tensor,
-        past_key_values: Cache = None,
-        output_attentions: bool = False,
+            self,
+            attention_mask: torch.Tensor,
+            input_tensor: torch.Tensor,
+            cache_position: torch.Tensor,
+            past_key_values: Cache = None,
+            output_attentions: bool = False,
     ):
         if self.config._attn_implementation == "flash_attention_2":
             if attention_mask is not None and 0.0 in attention_mask:
@@ -166,18 +156,18 @@ class GemmaBiModel(GemmaModel):
                 )  # copy to contiguous memory for in-place edit
                 mask_length = attention_mask.shape[-1]
                 padding_mask = (
-                    causal_mask[:, :, :, :mask_length]
-                    + attention_mask[:, None, None, :]
+                        causal_mask[:, :, :, :mask_length]
+                        + attention_mask[:, None, None, :]
                 )
                 padding_mask = padding_mask == 0
                 causal_mask[:, :, :, :mask_length] = causal_mask[
-                    :, :, :, :mask_length
-                ].masked_fill(padding_mask, min_dtype)
+                                                     :, :, :, :mask_length
+                                                     ].masked_fill(padding_mask, min_dtype)
         if (
-            self.config._attn_implementation == "sdpa"
-            and attention_mask is not None
-            and attention_mask.device.type == "cuda"
-            and not output_attentions
+                self.config._attn_implementation == "sdpa"
+                and attention_mask is not None
+                and attention_mask.device.type == "cuda"
+                and not output_attentions
         ):
             # Attend to all tokens in fully masked rows in the causal_mask, for example the relevant first rows when
             # using left padding. This is required by F.scaled_dot_product_attention memory-efficient attention path.

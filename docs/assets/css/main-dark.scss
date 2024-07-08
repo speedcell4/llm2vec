@@ -1,5 +1,7 @@
 ---
-# Keep this header for Jekyll to generate this as CSS
+
+#
+Keep this header for Jekyll to generate this as CSS
 ---
 
 /*
@@ -7,5 +9,5 @@ In dark mode, used to replace: https://github.com/mmistakes/minimal-mistakes/blo
 Source: https://github.com/mmistakes/minimal-mistakes/discussions/2033#discussioncomment-257421
 */
 
-@import "skins/dark.scss";  // Imports the light skin
+@import "skins/dark.scss"; // Imports the light skin
 @import "minimal-mistakes"; // main partials

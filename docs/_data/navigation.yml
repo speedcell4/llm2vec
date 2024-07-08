@@ -8,7 +8,7 @@ main:
   - title: "Contact"
     url: /contact/
 
-sidebar-docs:  # See "include" in /_config.yml and /docs/_docs
+sidebar-docs: # See "include" in /_config.yml and /docs/_docs
   - title: "Home"
     url: /docs/
   - title: "API"

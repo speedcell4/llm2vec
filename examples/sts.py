@@ -1,11 +1,10 @@
 import datasets
 import numpy as np
-from sklearn.metrics.pairwise import paired_cosine_distances
-from scipy.stats import spearmanr
-
 import torch
-from llm2vec import LLM2Vec
+from scipy.stats import spearmanr
+from sklearn.metrics.pairwise import paired_cosine_distances
 
+from llm2vec import LLM2Vec
 
 dataset = "mteb/sts17-crosslingual-sts"
 instruction = "Retrieve semantically similar text: "

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Union, List
+from typing import List, Union
 
 import torch
 
@@ -19,7 +19,7 @@ class TrainSample:
     """
 
     def __init__(
-        self, guid: str = "", texts: List[str] = None, label: Union[int, float] = 0
+            self, guid: str = "", texts: List[str] = None, label: Union[int, float] = 0
     ):
         """
         Creates one TrainSample with the given texts, guid and label
