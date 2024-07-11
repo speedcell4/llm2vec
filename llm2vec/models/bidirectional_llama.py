@@ -79,7 +79,8 @@ class LlamaBiModel(LlamaModel):
     def __init__(self, config: LlamaConfig):
         if not is_transformers_attn_greater_or_equal_4_38():
             raise ValueError(
-                "The current implementation of LlamaEncoderModel follows modeling_llama.py of transformers version >= 4.38.0"
+                "The current implementation of LlamaEncoderModel follows "
+                "modeling_llama.py of transformers version >= 4.38.0"
             )
         LlamaPreTrainedModel.__init__(self, config)
         self.padding_idx = config.pad_token_id
@@ -124,9 +125,7 @@ class LlamaBiModel(LlamaModel):
         dtype, device = input_tensor.dtype, input_tensor.device
         min_dtype = torch.finfo(dtype).min
         sequence_length = input_tensor.shape[1]
-        if hasattr(
-                getattr(self.layers[0], "self_attn", {}), "past_key_value"
-        ):  # static cache
+        if hasattr(getattr(self.layers[0], "self_attn", {}), "past_key_value"):  # static cache
             target_length = self.config.max_position_embeddings
         else:  # dynamic cache
             target_length = (
@@ -141,7 +140,9 @@ class LlamaBiModel(LlamaModel):
 
         causal_mask = torch.zeros(
             (sequence_length, target_length), dtype=dtype, device=device
-        )  # in original implementation - torch.full((sequence_length, target_length), fill_value=min_dtype, dtype=dtype, device=device)
+        )
+        # in original implementation -
+        # torch.full((sequence_length, target_length), fill_value=min_dtype, dtype=dtype, device=device)
         # Commenting out next 2 lines to disable causal masking
         # if sequence_length != 1:
         #     causal_mask = torch.triu(causal_mask, diagonal=1)

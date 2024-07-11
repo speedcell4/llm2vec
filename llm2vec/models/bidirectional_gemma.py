@@ -71,7 +71,8 @@ class GemmaBiModel(GemmaModel):
     def __init__(self, config: GemmaConfig):
         if not is_transformers_attn_greater_or_equal_4_41():
             raise ValueError(
-                "The current implementation of GemmaEncoderModel follows modeling_gemma.py of transformers version >= 4.41.0"
+                "The current implementation of GemmaEncoderModel follows "
+                "modeling_gemma.py of transformers version >= 4.41.0"
             )
         GemmaPreTrainedModel.__init__(self, config)
         self.padding_idx = config.pad_token_id
